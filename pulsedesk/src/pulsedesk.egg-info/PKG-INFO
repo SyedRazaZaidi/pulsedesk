@@ -1,0 +1,49 @@
+Metadata-Version: 2.4
+Name: pulsedesk
+Version: 0.1.0
+Summary: Ops demand desk: LightGBM quantile forecast, SQLite decision log, one FastAPI process.
+Author: Syed Muhammad Raza Zaidi
+License: MIT
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: fastapi>=0.115.0
+Requires-Dist: uvicorn[standard]>=0.32.0
+Requires-Dist: pydantic>=2.9.0
+Requires-Dist: numpy>=1.26.0
+Requires-Dist: pandas>=2.2.0
+Requires-Dist: lightgbm>=4.5.0
+Requires-Dist: scikit-learn>=1.5.0
+Requires-Dist: joblib>=1.4.0
+Provides-Extra: dev
+Requires-Dist: pytest>=8.3.0; extra == "dev"
+Dynamic: license-file
+
+# PulseDesk
+
+Retail **ops desk**: 14-day demand forecast with uncertainty, an order board, and a SQLite decision log.
+
+Not a chatbot. One process. CPU. No API key. No PyTorch.
+
+**Seasonal naive baseline → LightGBM quantiles (p10 / p50 / p90) → suggested order → accept / skip**
+
+## Why it exists
+
+Ops people do not want a single number. They want a band, a recommended qty, and a record of who overrode it.
+
+## Quick start
+
+```powershell
+cd D:\MyProjects\pulsedesk
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -e ".[dev]"
+pulsedesk all
+pulsedesk serve
+```
+
+Open [http://127.0.0.1:8010](http://127.0.0.1:8010).
+
+## Stack
+
+SQLite · FastAPI · LightGBM · one static desk. Laptop-safe (no Docker, no local LLM).

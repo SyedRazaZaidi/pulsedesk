@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseDesk — Karachi night ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Figtree:wght@400;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root { --night:#12081a; --bone:#f4e7c8; --amber:#ffb020; --mint:#7dffc3; --fog:#c9b89a; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--night); color: var(--bone); font-family: Figtree, sans-serif; }
+    main { max-width: 880px; margin: 0 auto; padding: 56px 24px 80px; }
+    em { color: var(--fog); font-style: normal; letter-spacing: .18em; text-transform: uppercase; font-size: 11px; }
+    h1 { font-family: Fraunces, serif; font-weight: 500; font-size: clamp(42px, 8vw, 72px); line-height: .95; letter-spacing: -.03em; }
+    h1 span { color: var(--amber); font-style: italic; }
+    p { color: var(--fog); line-height: 1.6; max-width: 58ch; }
+    .meters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 32px 0; }
+    .meter { border: 1px solid rgba(255,176,32,.2); padding: 14px 16px; }
+    .meter span { display: block; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--fog); }
+    .meter b { font-family: "IBM Plex Mono", monospace; font-size: 28px; color: var(--amber); }
+    .meter:first-child b { color: var(--mint); }
+    ol { padding-left: 18px; color: var(--fog); }
+    a.go { display: inline-block; margin-top: 18px; background: var(--amber); color: #1a0d24; text-decoration: none; padding: 12px 16px; font-weight: 700; }
+    a.ghost { color: var(--amber); }
+    @media (max-width: 700px) { .meters { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <em>PulseDesk · city demand command</em>
+    <h1>The city is about to<br /><span>buy more than you think.</span></h1>
+    <p>Quantile demand, not a single guess. LightGBM p10 / p50 / p90 against a seasonal-naive baseline. Order against the band. Stamp every override. Two Karachi stores. One SQLite ledger.</p>
+    <section class="meters">
+      <div class="meter"><span>MAE lift vs naive</span><b>34%</b></div>
+      <div class="meter"><span>Holdout nights</span><b>1,488</b></div>
+      <div class="meter"><span>p10–p90 cover</span><b>77%</b></div>
+    </section>
+    <p>This Space is the public card (free static). The working desk is a one-process FastAPI app on your machine — no API key, no PyTorch, no Docker.</p>
+    <ol>
+      <li>Clone the GitHub repo</li>
+      <li><code>pip install -e ".[dev]"</code></li>
+      <li><code>pulsedesk all</code> then <code>pulsedesk serve</code></li>
+      <li>Open <code>http://127.0.0.1:8010</code></li>
+    </ol>
+    <p><a class="go" id="repo" href="https://github.com/SyedRazaZaidi/pulsedesk">Open the GitHub repo</a></p>
+    <p>MIT · Syed Muhammad Raza Zaidi · <a class="ghost" href="https://huggingface.co/spaces">Hugging Face Space</a></p>
+  </main>
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PulseDesk — Karachi night ledger</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect fill='%2312081a' width='32' height='32'/%3E%3Cpath d='M4 18h6l2-8 3 16 3-12h10' stroke='%23ffb020' fill='none' stroke-width='2'/%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/app.css?v=4" />
+</head>
+<body data-page="command">
+  <canvas id="field" aria-hidden="true"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="vignette" aria-hidden="true"></div>
+  <div id="toast" class="toast" hidden></div>
+
+  <header class="mast">
+    <div class="brand">
+      <svg class="ecg" viewBox="0 0 72 24" aria-hidden="true">
+        <path d="M1 12 H16 L20 12 L23 3 L28 21 L32 12 H71" />
+      </svg>
+      <div>
+        <strong>PulseDesk</strong>
+        <em>Karachi night ledger</em>
+      </div>
+    </div>
+    <nav class="tabs" id="tabs">
+      <a href="#/command" data-page="command">Command</a>
+      <a href="#/ledger" data-page="ledger">Ledger</a>
+      <a href="#/catalog" data-page="catalog">Catalog</a>
+      <a href="#/stock" data-page="stock">Stock</a>
+      <a href="#/lab" data-page="lab">Lab</a>
+      <a href="#/tape" data-page="tape">Tape</a>
+    </nav>
+    <p class="live" id="status">warming the city…</p>
+    <time id="clock"></time>
+  </header>
+
+  <section class="page" id="page-command">
+    <main class="sheet">
+      <section class="billboard">
+        <div class="copy">
+          <p class="kicker">Holdout · 1,488 store-days · no leaked future</p>
+          <h1>The city is about to<br /><span>buy more than you think.</span></h1>
+          <p class="lede">Quantile demand, not a single guess. Order against the band. Stamp every override. Two Karachi nodes. Twelve SKUs. One ledger.</p>
+        </div>
+        <div class="seal" title="MAE lift versus seasonal naive">
+          <i></i>
+          <b id="lift">—</b>
+          <small>MAE lift vs naive</small>
+        </div>
+      </section>
+      <section class="city-wrap">
+        <header>
+          <h2>City pulse · last 45 nights</h2>
+          <span>sum of units across both stores</span>
+        </header>
+        <canvas id="city" height="140"></canvas>
+      </section>
+      <section class="harbors" id="harbors"></section>
+      <section class="meters" id="meters"></section>
+      <section class="control">
+        <label>Node <select id="store"></select></label>
+        <label class="slider">Service level
+          <input id="alpha" type="range" min="0" max="100" value="80" />
+          <b id="alphaOut">p80 cover</b>
+        </label>
+        <label class="slider">Demand shock
+          <input id="shock" type="range" min="0" max="80" value="0" />
+          <b id="shockOut">calm night</b>
+        </label>
+        <p class="keys">click a ticket · Ctrl+K palette</p>
+        <button class="ghost" id="packBtn" type="button">Buyer pack</button>
+        <a class="ghost linkish" href="/api/export/board.csv">Export board CSV</a>
+      </section>
+      <section class="intel" id="intel"></section>
+      <section class="alerts" id="alerts"></section>
+      <section class="mosaic">
+        <article class="panel">
+          <header><h2>Week rhythm</h2><span>SKU × weekday · mean units</span></header>
+          <div id="heat" class="heat"></div>
+        </article>
+        <article class="panel">
+          <header><h2>What the model hears</h2><span>LightGBM gain · p50</span></header>
+          <ol id="drivers"></ol>
+        </article>
+        <article class="panel">
+          <header><h2>Unsigned by aisle</h2><span>suggested units</span></header>
+          <ol id="cats"></ol>
+        </article>
+      </section>
+      <section>
+        <header class="row-head">
+          <h2>Order tickets</h2>
+          <span>click a ticket to open the theater</span>
+          <div class="chips" id="ticketFilter">
+            <button type="button" class="ghost on" data-f="all">All</button>
+            <button type="button" class="ghost" data-f="hot">Stockout</button>
+            <button type="button" class="ghost" data-f="open">Unsigned</button>
+          </div>
+        </header>
+        <div class="tickets" id="cards"></div>
+      </section>
+    </main>
+    <aside class="dock" id="theater" hidden>
+      <button class="scrim" id="thScrim" type="button" aria-label="Close theater"></button>
+      <div class="drawer">
+        <header>
+          <div>
+            <p class="kicker" id="thKicker">Ticket</p>
+            <h2 id="thTitle">Demand theater</h2>
+            <p id="thMeta"></p>
+          </div>
+          <button class="ghost" id="thClose" type="button">Close</button>
+        </header>
+        <p class="explain" id="thExplain"></p>
+        <canvas id="wave"></canvas>
+        <p class="legend"><i class="a"></i> actual <i class="b"></i> sister node <i class="c"></i> p50 <i class="d"></i> p10–p90</p>
+        <div class="th-actions">
+          <label class="tiny">Qty <input id="signQty" type="number" min="0" step="1" /></label>
+          <label class="tiny">Note <input id="signNote" type="text" placeholder="why this stamp" /></label>
+          <button class="ghost" id="skipBtn" type="button">Skip</button>
+          <button class="go" id="okBtn" type="button">Sign the order</button>
+        </div>
+      </div>
+    </aside>
+  </section>
+
+  <div id="packBox" class="modal" hidden>
+    <button class="scrim" id="packScrim" type="button" aria-label="Close pack"></button>
+    <div class="drawer slim">
+      <header>
+        <h2>Buyer pack</h2>
+        <a class="go linkish" id="packCsv" href="/api/export/pack.csv">Download CSV</a>
+      </header>
+      <p class="hint" id="packMeta"></p>
+      <ol id="packLines" class="eval"></ol>
+    </div>
+  </div>
+
+  <div id="palette" class="palette" hidden>
+    <input id="palQ" type="search" placeholder="Jump, open a SKU, run a transfer…  Esc closes" />
+    <ol id="palList"></ol>
+  </div>
+
+  <section class="page" id="page-ledger" hidden>
+    <main class="sheet work">
+      <header class="page-head">
+        <div>
+          <p class="kicker">Data handling</p>
+          <h1>Night ledger</h1>
+          <p class="lede">Every sold unit lives here. Filter, edit a night, add a row, import a CSV, or take a copy home.</p>
+        </div>
+      </header>
+      <form class="toolbar" id="ledFilters">
+        <label>Node <select id="ledStore"></select></label>
+        <label>SKU <select id="ledSku"></select></label>
+        <label>From <input id="ledFrom" type="date" /></label>
+        <label>To <input id="ledTo" type="date" /></label>
+        <label>Search <input id="ledQ" type="search" placeholder="milk, MLK…" /></label>
+        <label class="check"><input id="ledPromo" type="checkbox" /> promo only</label>
+        <button class="go" type="submit">Apply</button>
+        <a class="ghost linkish" id="ledExport" href="/api/export/observations.csv">Export CSV</a>
+      </form>
+      <div class="split-forms">
+        <form class="panel form" id="ledAdd">
+          <h2>Write a night</h2>
+          <label>Node <select name="store_id" id="ledAddStore" required></select></label>
+          <label>SKU <select name="sku_id" id="ledAddSku" required></select></label>
+          <label>Day <input name="day" type="date" required /></label>
+          <label>Units <input name="units" type="number" min="0" step="0.01" required /></label>
+          <label>On hand <input name="on_hand" type="number" min="0" step="0.01" required /></label>
+          <label class="check"><input name="promo" type="checkbox" /> promo</label>
+          <button class="go" type="submit">Save row</button>
+        </form>
+        <form class="panel form" id="ledImport">
+          <h2>Import CSV</h2>
+          <p class="hint">Columns: <code>day,units</code> plus <code>store_id,sku_id</code> or <code>store,sku</code>. Optional <code>promo,on_hand</code>.</p>
+          <input name="file" type="file" accept=".csv,text/csv" required />
+          <button class="go" type="submit">Upload into SQLite</button>
+        </form>
+      </div>
+      <p class="hint" id="ledMeta"></p>
+      <div class="table-wrap">
+        <table class="grid">
+          <thead>
+            <tr><th>Day</th><th>Store</th><th>SKU</th><th>Units</th><th>On hand</th><th>Promo</th><th></th></tr>
+          </thead>
+          <tbody id="ledBody"></tbody>
+        </table>
+      </div>
+      <div class="pager">
+        <button class="ghost" id="ledPrev" type="button">Newer</button>
+        <button class="ghost" id="ledNext" type="button">Older</button>
+      </div>
+    </main>
+  </section>
+
+  <section class="page" id="page-catalog" hidden>
+    <main class="sheet work">
+      <header class="page-head">
+        <div>
+          <p class="kicker">Master data</p>
+          <h1>Catalog</h1>
+          <p class="lede">SKUs, lead times, unit cost, and the two Karachi nodes. Add a line. Edit what the model already knows.</p>
+        </div>
+      </header>
+      <div class="split-forms">
+        <form class="panel form" id="catSku">
+          <h2>New SKU</h2>
+          <label>Code <input name="sku" required placeholder="TEA-200" /></label>
+          <label>Name <input name="name" required placeholder="Green tea 200g" /></label>
+          <label>Aisle <input name="category" required placeholder="Bev" /></label>
+          <label>Unit cost <input name="unit_cost" type="number" min="0" step="0.01" required /></label>
+          <label>Lead days <input name="lead_days" type="number" min="1" max="30" value="3" /></label>
+          <button class="go" type="submit">Add to catalog</button>
+        </form>
+        <form class="panel form" id="catStore">
+          <h2>New node</h2>
+          <label>Name <input name="name" required placeholder="Clifton Kiosk" /></label>
+          <label>City <input name="city" value="Karachi" required /></label>
+          <button class="go" type="submit">Open the node</button>
+        </form>
+      </div>
+      <div class="table-wrap">
+        <table class="grid">
+          <thead>
+            <tr><th>SKU</th><th>Name</th><th>Aisle</th><th>Cost</th><th>Lead</th><th></th></tr>
+          </thead>
+          <tbody id="catBody"></tbody>
+        </table>
+      </div>
+      <h2 class="sub">Nodes</h2>
+      <ul class="chips" id="catStores"></ul>
+    </main>
+  </section>
+
+  <section class="page" id="page-stock" hidden>
+    <main class="sheet work">
+      <header class="page-head">
+        <div>
+          <p class="kicker">Inventory</p>
+          <h1>Stock room</h1>
+          <p class="lede">Receive a crate. Write off damage. The latest on-hand and the open order both move. Every shift is logged.</p>
+        </div>
+      </header>
+      <form class="panel form wide" id="stkMove">
+        <h2>Move units</h2>
+        <div class="inline">
+          <label>Node <select name="store_id" id="stkStore" required></select></label>
+          <label>SKU <select name="sku_id" id="stkSku" required></select></label>
+          <label>Qty (+/−) <input name="qty" type="number" step="1" required /></label>
+          <label>Reason
+            <select name="reason">
+              <option value="receive">receive</option>
+              <option value="writeoff">write-off</option>
+              <option value="count">cycle count</option>
+              <option value="transfer">transfer</option>
+            </select>
+          </label>
+          <button class="go" type="submit">Post move</button>
+        </div>
+      </form>
+      <p class="hint" id="stkValue"></p>
+      <div class="table-wrap">
+        <table class="grid">
+          <thead>
+            <tr><th>Store</th><th>SKU</th><th>On hand</th><th>Value</th><th>Need p90</th><th>Risk</th><th>Last sold</th></tr>
+          </thead>
+          <tbody id="stkBody"></tbody>
+        </table>
+      </div>
+      <h2 class="sub">Recent moves</h2>
+      <ol class="tape" id="stkMoves"></ol>
+    </main>
+  </section>
+
+  <section class="page" id="page-lab" hidden>
+    <main class="sheet work">
+      <header class="page-head">
+        <div>
+          <p class="kicker">Model room</p>
+          <h1>Forecast lab</h1>
+          <p class="lede">Holdout score, feature gain, and a what-if: change cover or on-hand and see the order before you stamp it.</p>
+        </div>
+      </header>
+      <section class="meters" id="labMeters"></section>
+      <div class="split-forms">
+        <form class="panel form" id="labWhat">
+          <h2>What-if cover</h2>
+          <label>Node <select id="labStore" required></select></label>
+          <label>SKU <select id="labSku" required></select></label>
+          <label>Service <input id="labAlpha" type="range" min="0" max="100" value="80" /><b id="labAlphaOut">p80</b></label>
+          <label>On-hand override <input id="labOn" type="number" min="0" step="1" placeholder="leave blank to use live" /></label>
+          <button class="go" type="submit">Run the band</button>
+          <div class="whatout" id="labOut">Pick a pair and run.</div>
+        </form>
+        <article class="panel">
+          <header><h2>Eval tape</h2><span>every pulsedesk train</span></header>
+          <ol id="labEval" class="eval"></ol>
+        </article>
+      </div>
+      <article class="panel">
+        <header><h2>What the model hears</h2><span>LightGBM gain · p50</span></header>
+        <ol id="labDrivers"></ol>
+      </article>
+    </main>
+  </section>
+
+  <section class="page" id="page-tape" hidden>
+    <main class="sheet work">
+      <header class="page-head">
+        <div>
+          <p class="kicker">Human loop</p>
+          <h1>Decision tape</h1>
+          <p class="lede">Every accept, skip, and edit. Add a note after the fact. Export the paper trail for a buyer or a recruiter.</p>
+        </div>
+        <a class="go linkish" href="/api/export/decisions.csv">Export decisions CSV</a>
+      </header>
+      <div class="table-wrap">
+        <table class="grid">
+          <thead>
+            <tr><th>When</th><th>Action</th><th>SKU</th><th>Store</th><th>Qty</th><th>Note</th><th></th></tr>
+          </thead>
+          <tbody id="tapeBody"></tbody>
+        </table>
+      </div>
+      <h2 class="sub">Audit</h2>
+      <ol class="tape" id="auditBody"></ol>
+    </main>
+  </section>
+
+  <script src="/static/app.js?v=4"></script>
+</body>
+</html>

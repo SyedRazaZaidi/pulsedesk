@@ -1,0 +1,9 @@
+{
+  "cutoff": "2025-07-25",
+  "n_holdout": 1488,
+  "mae_model": 5.0520685977383,
+  "mae_baseline": 7.67747311827957,
+  "mape_model": 0.14978138029971264,
+  "coverage_p10_p90": 0.7688172043010753,
+  "beats_baseline": true
+}
